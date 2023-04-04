@@ -1,4 +1,4 @@
-Shader "TextMeshPro/Distance Field" {
+Shader "TextMeshPro/Distance Field Visionz" {
 
 Properties {
 	_FaceTex			("Face Texture", 2D) = "white" {}
@@ -43,7 +43,7 @@ Properties {
 	_UnderlayDilate		("Border Dilate", Range(-1,1)) = 0
 	_UnderlaySoftness	("Border Softness", Range(0,1)) = 0
 
-	[HDR]_GlowColor			("Color", Color) = (0, 1, 0, 0.5)
+	[HDR]_GlowColor		("Color", Color) = (0, 1, 0, 0.5)
 	_GlowOffset			("Offset", Range(-1,1)) = 0
 	_GlowInner			("Inner", Range(0,1)) = 0.05
 	_GlowOuter			("Outer", Range(0,1)) = 0.05
@@ -131,6 +131,7 @@ SubShader {
 			UNITY_VERTEX_INPUT_INSTANCE_ID
 			float4	position		: POSITION;
 			float3	normal			: NORMAL;
+			float4	tangent			: TANGENT;
 			fixed4	color			: COLOR;
 			float2	texcoord0		: TEXCOORD0;
 			float2	texcoord1		: TEXCOORD1;
@@ -152,6 +153,9 @@ SubShader {
 			fixed4	underlayColor	: COLOR1;
 		#endif
 			float4 textures			: TEXCOORD5;
+
+			float3	outlineParam	: TEXCOORD6;		// Thickness, Softness, ScaleRatioA
+			fixed4	outlineColor	: COLOR2;
 		};
 
 		// Used by Unity internally to handle Texture Tiling and Offset.
@@ -179,22 +183,34 @@ SubShader {
 			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
 			float scale = rsqrt(dot(pixelSize, pixelSize));
 			scale *= abs(input.texcoord1.y) * _GradientScale * (_Sharpness + 1);
-			if (UNITY_MATRIX_P[3][3] == 0) scale = lerp(abs(scale) * (1 - _PerspectiveFilter), scale, abs(dot(UnityObjectToWorldNormal(input.normal.xyz), normalize(WorldSpaceViewDir(vert)))));
+			//if (UNITY_MATRIX_P[3][3] == 0) scale = lerp(abs(scale) * (1 - _PerspectiveFilter), scale, abs(dot(UnityObjectToWorldNormal(input.normal.xyz), normalize(WorldSpaceViewDir(vert)))));
 
 			float weight = lerp(_WeightNormal, _WeightBold, bold) / 4.0;
-			weight = (weight + _FaceDilate) * _ScaleRatioA * 0.5;
+			float maxWeight = max(_WeightNormal, _WeightBold) / 4.0;
+			float outlineWidth = input.normal.x;
+			float outlineSoftness = input.normal.y;
+			float faceDilate = input.normal.z;
+			float scaleRatioA = 1.0 / max(1, maxWeight + faceDilate + outlineWidth + outlineSoftness);
+			weight = (weight + faceDilate) * scaleRatioA * 0.5;
 
 			float bias =(.5 - weight) + (.5 / scale);
-
-			float alphaClip = (1.0 - _OutlineWidth * _ScaleRatioA - _OutlineSoftness * _ScaleRatioA);
+			float alphaClip = (1.0 - outlineWidth * scaleRatioA - outlineSoftness * scaleRatioA);
 
 		#if GLOW_ON
-			alphaClip = min(alphaClip, 1.0 - _GlowOffset * _ScaleRatioB - _GlowOuter * _ScaleRatioB);
+			float glowRange = (maxWeight + faceDilate) * (_GradientScale - 1);
+			float glowWidth = max(1, _GlowOffset + _GlowOuter);
+			float scaleRatioB = max(0, _GradientScale - 1 - glowRange) / (_GradientScale * glowWidth);
+
+			alphaClip = min(alphaClip, 1.0 - _GlowOffset * scaleRatioB - _GlowOuter * scaleRatioB);
 		#endif
 
 			alphaClip = alphaClip / 2.0 - ( .5 / scale) - weight;
 
 		#if (UNDERLAY_ON || UNDERLAY_INNER)
+			float underlayRange = (maxWeight + faceDilate) * (_GradientScale - 1);
+			float underlayWidth = max(1, max(abs(_UnderlayOffsetX), abs(_UnderlayOffsetY)) + _UnderlayDilate + _UnderlaySoftness);
+			float scaleRatioC = max(0, _GradientScale - 1 - underlayRange) / (_GradientScale * underlayWidth)
+
 			float4 underlayColor = _UnderlayColor;
 			underlayColor.rgb *= underlayColor.a;
 
@@ -228,7 +244,8 @@ SubShader {
 			output.underlayColor =	underlayColor;
 			#endif
 			output.textures = float4(faceUV, outlineUV);
-
+			output.outlineParam = float3(outlineWidth, outlineSoftness, scaleRatioA);
+			output.outlineColor = input.tangent;
 			return output;
 		}
 
@@ -247,12 +264,16 @@ SubShader {
 			float	bias	= input.param.z;
 			float	weight	= input.param.w;
 			float	sd = (bias - c) * scale;
+			
+			float outlineWidth = input.outlineParam.x;
+			float outlineSoftness = input.outlineParam.y;
+			float scaleRatioA = input.outlineParam.z;
 
-			float outline = (_OutlineWidth * _ScaleRatioA) * scale;
-			float softness = (_OutlineSoftness * _ScaleRatioA) * scale;
+			float outline = (outlineWidth * scaleRatioA) * scale;
+			float softness = (outlineSoftness * scaleRatioA) * scale;
 
 			half4 faceColor = _FaceColor;
-			half4 outlineColor = _OutlineColor;
+			half4 outlineColor = input.outlineColor;
 
 			faceColor.rgb *= input.color.rgb;
 
