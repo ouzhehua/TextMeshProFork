@@ -5426,8 +5426,8 @@ namespace TMPro
 
             // Normal
             #region Setup Normals & Tangents
-            Vector3 normal = Vector3.back;
-            Vector4 tangent = Vector4.zero;
+            Vector3 normal = Vector3.zero;
+            Vector4 tangent = Vector4.one;
             if (m_enableOutline)
             {
                 normal = new Vector3(m_textOutlineThickness, m_textOutlineSoftness, m_textOutlineDilate);
