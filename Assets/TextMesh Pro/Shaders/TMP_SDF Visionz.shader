@@ -209,7 +209,7 @@ SubShader {
 		#if (UNDERLAY_ON || UNDERLAY_INNER)
 			float underlayRange = (maxWeight + faceDilate) * (_GradientScale - 1);
 			float underlayWidth = max(1, max(abs(_UnderlayOffsetX), abs(_UnderlayOffsetY)) + _UnderlayDilate + _UnderlaySoftness);
-			float scaleRatioC = max(0, _GradientScale - 1 - underlayRange) / (_GradientScale * underlayWidth)
+			float scaleRatioC = max(0, _GradientScale - 1 - underlayRange) / (_GradientScale * underlayWidth);
 
 			float4 underlayColor = _UnderlayColor;
 			underlayColor.rgb *= underlayColor.a;
