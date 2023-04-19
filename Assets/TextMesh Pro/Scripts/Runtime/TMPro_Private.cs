@@ -4579,12 +4579,22 @@ namespace TMPro
                 return;
             }
 
-            for (int characterIndex = 0; characterIndex < m_textInfo.characterInfo.Length; characterIndex++)
+            Vector3 normal;
+            Vector4 tangent;
+            if (canvas != null)
             {
                 Vector3 scaleVector3 = new Vector3(transform.lossyScale.x / canvas.transform.lossyScale.x, transform.lossyScale.y / canvas.transform.lossyScale.y, transform.lossyScale.z / canvas.transform.lossyScale.z);
-                Vector3 normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
-                Vector4 tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
+                normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
+                tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
+            }
+            else
+            {
+                normal = new Vector3(m_textOutlineThickness, m_textOutlineSoftness, m_textOutlineDilate);
+                tangent = new Vector4(m_textOutlineColor.r, m_textOutlineColor.g, m_textOutlineColor.b, m_textOutlineColor.a);
+            }
 
+            for (int characterIndex = 0; characterIndex < m_characterCount; characterIndex++)
+            {
                 m_textInfo.characterInfo[characterIndex].vertex_BL.normal = normal;
                 m_textInfo.characterInfo[characterIndex].vertex_TL.normal = normal;
                 m_textInfo.characterInfo[characterIndex].vertex_TR.normal = normal;

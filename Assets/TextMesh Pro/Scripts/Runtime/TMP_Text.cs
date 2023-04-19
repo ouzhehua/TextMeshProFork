@@ -5430,13 +5430,17 @@ namespace TMPro
             Vector4 tangent = Vector4.one;
             if (m_enableOutline)
             {
-                //normal = new Vector3(m_textOutlineThickness, m_textOutlineSoftness, m_textOutlineDilate);
-                //tangent = new Vector4(m_textOutlineColor.r, m_textOutlineColor.g, m_textOutlineColor.b, m_textOutlineColor.a);
-
-                //可手动调 SetVerticesDirty() 和 SetLayoutDirty() 触发刷新
-                Vector3 scaleVector3 = new Vector3(transform.lossyScale.x / canvas.transform.lossyScale.x, transform.lossyScale.y / canvas.transform.lossyScale.y, transform.lossyScale.z / canvas.transform.lossyScale.z);
-                normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
-                tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
+                if (canvas != null)
+                {
+                    Vector3 scaleVector3 = new Vector3(transform.lossyScale.x / canvas.transform.lossyScale.x, transform.lossyScale.y / canvas.transform.lossyScale.y, transform.lossyScale.z / canvas.transform.lossyScale.z);
+                    normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
+                    tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
+                }
+                else
+                {
+                    normal = new Vector3(m_textOutlineThickness, m_textOutlineSoftness, m_textOutlineDilate);
+                    tangent = new Vector4(m_textOutlineColor.r, m_textOutlineColor.g, m_textOutlineColor.b, m_textOutlineColor.a);
+                }
             }
             m_textInfo.characterInfo[m_characterCount].vertex_BL.normal = normal;
             m_textInfo.characterInfo[m_characterCount].vertex_TL.normal = normal;
