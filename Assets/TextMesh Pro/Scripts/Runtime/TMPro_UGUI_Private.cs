@@ -4670,16 +4670,6 @@ namespace TMPro
                 {
                     meshInfo.uvs2[i].y *= Mathf.Abs(scaleDelta);
                 }
-
-                for (int i = 0; i < meshInfo.normals.Length; i++)
-                {
-                    meshInfo.normals[i] /= Mathf.Abs(scaleDelta);
-                }
-
-                for (int i = 0; i < meshInfo.tangents.Length; i++)
-                {
-                    meshInfo.tangents[i] /= Mathf.Abs(scaleDelta);
-                }
             }
 
             // Push the updated uv2 scale information to the meshes.
