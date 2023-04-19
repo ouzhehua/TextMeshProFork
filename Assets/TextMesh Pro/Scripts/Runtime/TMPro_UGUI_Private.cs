@@ -1,10 +1,8 @@
 using System;
-using System.Globalization;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.TextCore;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 using Object = UnityEngine.Object;
 
 #pragma warning disable 0414 // Disabled a few warnings related to serialized variables not used in this script but used in the editor.
