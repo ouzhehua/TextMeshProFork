@@ -1590,27 +1590,43 @@ namespace TMPro
             // We need to update the SDF scale or possibly regenerate the text object if lossy scale has changed.
             if (m_havePropertiesChanged == false)
             {
-                float lossyScaleX = m_rectTransform.lossyScale.x;
-                float lossyScaleY = m_rectTransform.lossyScale.y;
-                float lossyScaleZ = m_rectTransform.lossyScale.z;
-
                 // Ignore very small lossy scale changes as their effect on SDF Scale would not be visually noticeable.
                 // Do not update SDF Scale if the text is null or empty
-                if (Mathf.Abs(lossyScaleY - m_previousLossyScaleY) > 0.0001f && m_TextProcessingArray[0].unicode != 0)
+                if (m_TextProcessingArray[0].unicode != 0)
                 {
-                    float scaleDelta = lossyScaleY / m_previousLossyScaleY;
-                    
-                    UpdateSDFScale(scaleDelta);
-                }
+                    float lossyScaleX = m_rectTransform.lossyScale.x;
+                    float lossyScaleY = m_rectTransform.lossyScale.y;
+                    float lossyScaleZ = m_rectTransform.lossyScale.z;
 
-                if (Mathf.Abs(lossyScaleX - m_previousLossyScaleX) > 0.0001f || Mathf.Abs(lossyScaleY - m_previousLossyScaleY) > 0.0001f || Mathf.Abs(lossyScaleZ - m_previousLossyScaleZ) > 0.0001f)
-                {
-                    UpdateOutlineScale();
-                }
+                    bool scaleXChange = Mathf.Abs(lossyScaleX - m_previousLossyScaleX) > 0.0001f;
+                    bool scaleYChange = Mathf.Abs(lossyScaleY - m_previousLossyScaleY) > 0.0001f;
+                    bool scaleZChange = Mathf.Abs(lossyScaleZ - m_previousLossyScaleZ) > 0.0001f;
 
-                m_previousLossyScaleX = lossyScaleX;
-                m_previousLossyScaleY = lossyScaleY;
-                m_previousLossyScaleZ = lossyScaleZ;
+                    if (scaleYChange)
+                    {
+                        float scaleDelta = lossyScaleY / m_previousLossyScaleY;
+
+                        UpdateSDFScale(scaleDelta);
+                    }
+
+                    if (scaleXChange || scaleYChange || scaleZChange)
+                    {
+                        UpdateOutlineScale();
+                    }
+
+                    if (scaleXChange)
+                    {
+                        m_previousLossyScaleX = lossyScaleX;
+                    }
+                    if (scaleYChange)
+                    {
+                        m_previousLossyScaleY = lossyScaleY;
+                    }
+                    if (scaleZChange)
+                    {
+                        m_previousLossyScaleZ = lossyScaleZ;
+                    }
+                }
             }
 
             // Added to handle legacy animation mode.
