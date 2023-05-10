@@ -4739,15 +4739,21 @@ namespace TMPro
 
                 //--------------------------------------------------------------------
                 int materialIndex = m_textInfo.characterInfo[characterIndex].materialReferenceIndex;
-                m_textInfo.meshInfo[materialIndex].normals[0 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BL.normal;
-                m_textInfo.meshInfo[materialIndex].normals[1 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TL.normal;
-                m_textInfo.meshInfo[materialIndex].normals[2 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TR.normal;
-                m_textInfo.meshInfo[materialIndex].normals[3 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BR.normal;
+                if (m_textInfo.meshInfo[materialIndex].normals.Length > (3 + characterIndex * 4))
+                {
+                    m_textInfo.meshInfo[materialIndex].normals[0 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BL.normal;
+                    m_textInfo.meshInfo[materialIndex].normals[1 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TL.normal;
+                    m_textInfo.meshInfo[materialIndex].normals[2 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TR.normal;
+                    m_textInfo.meshInfo[materialIndex].normals[3 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BR.normal;
+                }
 
-                m_textInfo.meshInfo[materialIndex].tangents[0 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BL.tangent;
-                m_textInfo.meshInfo[materialIndex].tangents[1 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TL.tangent;
-                m_textInfo.meshInfo[materialIndex].tangents[2 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TR.tangent;
-                m_textInfo.meshInfo[materialIndex].tangents[3 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BR.tangent;
+                if (m_textInfo.meshInfo[materialIndex].tangents.Length > (3 + characterIndex * 4))
+                {
+                    m_textInfo.meshInfo[materialIndex].tangents[0 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BL.tangent;
+                    m_textInfo.meshInfo[materialIndex].tangents[1 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TL.tangent;
+                    m_textInfo.meshInfo[materialIndex].tangents[2 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TR.tangent;
+                    m_textInfo.meshInfo[materialIndex].tangents[3 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BR.tangent;
+                }
             }
 
             for (int i = 0; i < m_textInfo.materialCount; i++)
