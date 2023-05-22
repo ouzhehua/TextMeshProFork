@@ -4599,7 +4599,8 @@ namespace TMPro
             Vector4 tangent;
             if (canvas != null)
             {
-                Vector3 scaleVector3 = new Vector3(transform.lossyScale.x / canvas.transform.lossyScale.x, transform.lossyScale.y / canvas.transform.lossyScale.y, transform.lossyScale.z / canvas.transform.lossyScale.z);
+                Canvas rootCanvas = canvas.rootCanvas;
+                Vector3 scaleVector3 = new Vector3(transform.lossyScale.x / rootCanvas.transform.lossyScale.x, transform.lossyScale.y / rootCanvas.transform.lossyScale.y, transform.lossyScale.z / rootCanvas.transform.lossyScale.z);
                 normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
                 tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
             }
