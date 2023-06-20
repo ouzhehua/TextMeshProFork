@@ -315,7 +315,7 @@ namespace TMPro
         }
         [SerializeField]
         [Range(-1f, 1f)]
-        protected float m_textOutlineDilate;
+        protected float m_textOutlineDilate = 0.1f;
 
         /// <summary>
         /// Determines if Vertex Color Gradient should be used
