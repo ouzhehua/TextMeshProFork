@@ -276,6 +276,46 @@ namespace TMPro
             set { if (m_fontColor.a == value) return; m_fontColor.a = value; m_havePropertiesChanged = true; SetVerticesDirty(); }
         }
 
+        public bool enableOutline
+        {
+            get { return m_enableOutline; }
+            set { if (m_enableOutline == value) return; m_havePropertiesChanged = true; m_enableOutline = value; SetVerticesDirty(); }
+        }
+        [SerializeField]
+        protected bool m_enableOutline;
+
+        public Color textOutlineColor
+        {
+            get { return m_textOutlineColor; }
+            set { if (m_textOutlineColor == value) return; m_havePropertiesChanged = true; m_textOutlineColor = value; SetVerticesDirty(); }
+        }
+        [SerializeField]
+        protected Color m_textOutlineColor = Color.black;
+
+        public float textOutlineThickness
+        {
+            get { return m_textOutlineThickness; }
+            set { if (m_textOutlineThickness == value) return; m_havePropertiesChanged = true; m_textOutlineThickness = value; SetVerticesDirty(); }
+        }
+        [SerializeField]
+        [Range(0f, 1f)]
+        protected float m_textOutlineThickness = 0.1f;
+        public float textOutlineSoftness
+        {
+            get { return m_textOutlineSoftness; }
+            set { if (m_textOutlineSoftness == value) return; m_havePropertiesChanged = true; m_textOutlineSoftness = value; SetVerticesDirty(); }
+        }
+        [SerializeField]
+        [Range(0f, 1f)]
+        protected float m_textOutlineSoftness;
+        public float textOutlineDilate
+        {
+            get { return m_textOutlineDilate; }
+            set { if (m_textOutlineDilate == value) return; m_havePropertiesChanged = true; m_textOutlineDilate = value; SetVerticesDirty(); }
+        }
+        [SerializeField]
+        [Range(-1f, 1f)]
+        protected float m_textOutlineDilate = 0.1f;
 
         /// <summary>
         /// Determines if Vertex Color Gradient should be used
@@ -5386,18 +5426,31 @@ namespace TMPro
 
             // Normal
             #region Setup Normals & Tangents
-            //Vector3 normal = new Vector3(0, 0, -1);
-            //m_textInfo.characterInfo[m_characterCount].vertex_BL.normal = normal;
-            //m_textInfo.characterInfo[m_characterCount].vertex_TL.normal = normal;
-            //m_textInfo.characterInfo[m_characterCount].vertex_TR.normal = normal;
-            //m_textInfo.characterInfo[m_characterCount].vertex_BR.normal = normal;
+            Vector3 normal = Vector3.zero;
+            Vector4 tangent = Vector4.one;
+            if (m_enableOutline)
+            {
+                Vector3 scaleVector3 = new Vector3(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
+                if (canvas != null)
+                {
+                    Canvas rootCanvas = canvas.rootCanvas;
+                    scaleVector3.x /= rootCanvas.transform.lossyScale.x;
+                    scaleVector3.y /= rootCanvas.transform.lossyScale.y;
+                    scaleVector3.z /= rootCanvas.transform.lossyScale.z;
+                }
 
-            // Tangents
-            //Vector4 tangent = new Vector4(-1, 0, 0, 1);
-            //m_textInfo.characterInfo[m_characterCount].vertex_BL.tangent = tangent;
-            //m_textInfo.characterInfo[m_characterCount].vertex_TL.tangent = tangent;
-            //m_textInfo.characterInfo[m_characterCount].vertex_TR.tangent = tangent;
-            //m_textInfo.characterInfo[m_characterCount].vertex_BR.tangent = tangent;
+                normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
+                tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
+            }
+            m_textInfo.characterInfo[m_characterCount].vertex_BL.normal = normal;
+            m_textInfo.characterInfo[m_characterCount].vertex_TL.normal = normal;
+            m_textInfo.characterInfo[m_characterCount].vertex_TR.normal = normal;
+            m_textInfo.characterInfo[m_characterCount].vertex_BR.normal = normal;
+
+            m_textInfo.characterInfo[m_characterCount].vertex_BL.tangent = tangent;
+            m_textInfo.characterInfo[m_characterCount].vertex_TL.tangent = tangent;
+            m_textInfo.characterInfo[m_characterCount].vertex_TR.tangent = tangent;
+            m_textInfo.characterInfo[m_characterCount].vertex_BR.tangent = tangent;
             #endregion end Normals & Tangents
         }
 
@@ -5549,6 +5602,17 @@ namespace TMPro
             m_textInfo.meshInfo[materialIndex].colors32[3 + index_X4] = characterInfoArray[i].vertex_BR.color;
 
             m_textInfo.meshInfo[materialIndex].vertexCount = index_X4 + 4;
+
+            // Setup Normals & Tangents For Outline
+            m_textInfo.meshInfo[materialIndex].normals[0 + index_X4] = characterInfoArray[i].vertex_BL.normal;
+            m_textInfo.meshInfo[materialIndex].normals[1 + index_X4] = characterInfoArray[i].vertex_TL.normal;
+            m_textInfo.meshInfo[materialIndex].normals[2 + index_X4] = characterInfoArray[i].vertex_TR.normal;
+            m_textInfo.meshInfo[materialIndex].normals[3 + index_X4] = characterInfoArray[i].vertex_BR.normal;
+
+            m_textInfo.meshInfo[materialIndex].tangents[0 + index_X4] = characterInfoArray[i].vertex_BL.tangent;
+            m_textInfo.meshInfo[materialIndex].tangents[1 + index_X4] = characterInfoArray[i].vertex_TL.tangent;
+            m_textInfo.meshInfo[materialIndex].tangents[2 + index_X4] = characterInfoArray[i].vertex_TR.tangent;
+            m_textInfo.meshInfo[materialIndex].tangents[3 + index_X4] = characterInfoArray[i].vertex_BR.tangent;
         }
 
 
