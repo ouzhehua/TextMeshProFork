@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.TextCore;
