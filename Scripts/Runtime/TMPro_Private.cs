@@ -17,9 +17,7 @@ namespace TMPro
         [SerializeField]
         private bool m_hasFontAssetChanged = false; // Used to track when font properties have changed.
 
-        float m_previousLossyScaleX = -1; // Used for Tracking lossy scale changes in the transform;
         float m_previousLossyScaleY = -1; // Used for Tracking lossy scale changes in the transform;
-        float m_previousLossyScaleZ = -1; // Used for Tracking lossy scale changes in the transform;
 
         [SerializeField]
         private Renderer m_renderer;
@@ -1475,42 +1473,17 @@ namespace TMPro
             // We need to update the SDF scale or possibly regenerate the text object if lossy scale has changed.
             if (m_havePropertiesChanged == false)
             {
+                float lossyScaleY = m_rectTransform.lossyScale.y;
+
                 // Ignore very small lossy scale changes as their effect on SDF Scale would not be visually noticeable.
                 // Do not update SDF Scale if the text is null or empty
-                if (m_TextProcessingArray[0].unicode != 0)
+                if (Mathf.Abs(lossyScaleY - m_previousLossyScaleY) > 0.0001f && m_TextProcessingArray[0].unicode != 0)
                 {
-                    float lossyScaleX = m_rectTransform.lossyScale.x;
-                    float lossyScaleY = m_rectTransform.lossyScale.y;
-                    float lossyScaleZ = m_rectTransform.lossyScale.z;
+                    float scaleDelta = lossyScaleY / m_previousLossyScaleY;
 
-                    bool scaleXChange = Mathf.Abs(lossyScaleX - m_previousLossyScaleX) > 0.0001f;
-                    bool scaleYChange = Mathf.Abs(lossyScaleY - m_previousLossyScaleY) > 0.0001f;
-                    bool scaleZChange = Mathf.Abs(lossyScaleZ - m_previousLossyScaleZ) > 0.0001f;
+                    UpdateSDFScale(scaleDelta);
 
-                    if (scaleYChange)
-                    {
-                        float scaleDelta = lossyScaleY / m_previousLossyScaleY;
-
-                        UpdateSDFScale(scaleDelta);
-                    }
-
-                    if (scaleXChange || scaleYChange || scaleZChange)
-                    {
-                        UpdateOutlineScale();
-                    }
-
-                    if (scaleXChange)
-                    {
-                        m_previousLossyScaleX = lossyScaleX;
-                    }
-                    if (scaleYChange)
-                    {
-                        m_previousLossyScaleY = lossyScaleY;
-                    }
-                    if (scaleZChange)
-                    {
-                        m_previousLossyScaleZ = lossyScaleZ;
-                    }
+                    m_previousLossyScaleY = lossyScaleY;
                 }
             }
 
@@ -4588,68 +4561,14 @@ namespace TMPro
             }
         }
 
-        void UpdateOutlineScale()
+        protected override void SetupNormalsAndTangents(out Vector3 normal, out Vector4 tangent)
         {
-            if (!m_enableOutline)
+            normal = Vector3.zero;
+            tangent = Vector4.one;
+            if (m_enableOutline)
             {
-                return;
-            }
-
-            Vector3 scaleVector3 = new Vector3(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
-            if (canvas != null)
-            {
-                Canvas rootCanvas = canvas.rootCanvas;
-                scaleVector3.x /= rootCanvas.transform.lossyScale.x;
-                scaleVector3.y /= rootCanvas.transform.lossyScale.y;
-                scaleVector3.z /= rootCanvas.transform.lossyScale.z;
-            }
-
-            Vector3 normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
-            Vector4 tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
-
-            for (int characterIndex = 0; characterIndex < m_characterCount; characterIndex++)
-            {
-                m_textInfo.characterInfo[characterIndex].vertex_BL.normal = normal;
-                m_textInfo.characterInfo[characterIndex].vertex_TL.normal = normal;
-                m_textInfo.characterInfo[characterIndex].vertex_TR.normal = normal;
-                m_textInfo.characterInfo[characterIndex].vertex_BR.normal = normal;
-
-                m_textInfo.characterInfo[characterIndex].vertex_BL.tangent = tangent;
-                m_textInfo.characterInfo[characterIndex].vertex_TL.tangent = tangent;
-                m_textInfo.characterInfo[characterIndex].vertex_TR.tangent = tangent;
-                m_textInfo.characterInfo[characterIndex].vertex_BR.tangent = tangent;
-
-                //--------------------------------------------------------------------
-                int materialIndex = m_textInfo.characterInfo[characterIndex].materialReferenceIndex;
-                if (m_textInfo.meshInfo[materialIndex].normals.Length > (3 + characterIndex * 4))
-                {
-                    m_textInfo.meshInfo[materialIndex].normals[0 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BL.normal;
-                    m_textInfo.meshInfo[materialIndex].normals[1 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TL.normal;
-                    m_textInfo.meshInfo[materialIndex].normals[2 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TR.normal;
-                    m_textInfo.meshInfo[materialIndex].normals[3 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BR.normal;
-                }
-
-                if (m_textInfo.meshInfo[materialIndex].tangents.Length > (3 + characterIndex * 4))
-                {
-                    m_textInfo.meshInfo[materialIndex].tangents[0 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BL.tangent;
-                    m_textInfo.meshInfo[materialIndex].tangents[1 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TL.tangent;
-                    m_textInfo.meshInfo[materialIndex].tangents[2 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_TR.tangent;
-                    m_textInfo.meshInfo[materialIndex].tangents[3 + characterIndex * 4] = m_textInfo.characterInfo[characterIndex].vertex_BR.tangent;
-                }
-            }
-
-            for (int i = 0; i < m_textInfo.materialCount; i++)
-            {
-                if (i == 0)
-                {
-                    m_mesh.normals = m_textInfo.meshInfo[0].normals;
-                    m_mesh.tangents = m_textInfo.meshInfo[0].tangents;
-                }
-                else
-                {
-                    m_subTextObjects[i].mesh.normals = m_textInfo.meshInfo[i].normals;
-                    m_subTextObjects[i].mesh.tangents = m_textInfo.meshInfo[i].tangents;
-                }
+                normal = new Vector3(m_textOutlineThickness, m_textOutlineSoftness, m_textOutlineDilate);
+                tangent = new Vector4(m_textOutlineColor.r, m_textOutlineColor.g, m_textOutlineColor.b, m_textOutlineColor.a);
             }
         }
     }

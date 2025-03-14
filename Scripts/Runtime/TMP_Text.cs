@@ -5428,20 +5428,8 @@ namespace TMPro
             #region Setup Normals & Tangents
             Vector3 normal = Vector3.zero;
             Vector4 tangent = Vector4.one;
-            if (m_enableOutline)
-            {
-                Vector3 scaleVector3 = new Vector3(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
-                if (canvas != null)
-                {
-                    Canvas rootCanvas = canvas.rootCanvas;
-                    scaleVector3.x /= rootCanvas.transform.lossyScale.x;
-                    scaleVector3.y /= rootCanvas.transform.lossyScale.y;
-                    scaleVector3.z /= rootCanvas.transform.lossyScale.z;
-                }
-
-                normal = new Vector3(m_textOutlineThickness / scaleVector3.x, m_textOutlineSoftness / scaleVector3.y, m_textOutlineDilate / scaleVector3.z);
-                tangent = new Vector4(m_textOutlineColor.r / scaleVector3.x, m_textOutlineColor.g / scaleVector3.y, m_textOutlineColor.b / scaleVector3.z, m_textOutlineColor.a);
-            }
+            SetupNormalsAndTangents(out normal, out tangent);
+            
             m_textInfo.characterInfo[m_characterCount].vertex_BL.normal = normal;
             m_textInfo.characterInfo[m_characterCount].vertex_TL.normal = normal;
             m_textInfo.characterInfo[m_characterCount].vertex_TR.normal = normal;
@@ -5454,7 +5442,8 @@ namespace TMPro
             #endregion end Normals & Tangents
         }
 
-
+        protected abstract void SetupNormalsAndTangents(out Vector3 normal, out Vector4 tangent);
+        
         /// <summary>
         /// Store vertex information for each sprite.
         /// </summary>
